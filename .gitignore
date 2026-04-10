@@ -130,3 +130,6 @@ dmypy.json
 
 # Configuration files
 config.yaml
+
+# Local launcher (has hardcoded paths)
+whisper-writer.bat
