@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          uv pip install ruff
+
+      - name: Run Ruff linter
+        run: uv run ruff check src/ run.py
+
+      - name: Run Ruff formatter check
+        run: uv run ruff format --check src/ run.py
+
+  validate:
+    name: Validate imports
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          uv pip install -r requirements.txt
+
+      - name: Check Python syntax
+        run: uv run python -m py_compile run.py
+
+      - name: Check source files compile
+        run: |
+          for f in src/*.py src/ui/*.py; do
+            uv run python -m py_compile "$f"
+          done
+
+  validate-config:
+    name: Validate config schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyYAML
+        run: |
+          uv venv
+          uv pip install pyyaml
+
+      - name: Validate config schema YAML
+        run: uv run python -c "import yaml; yaml.safe_load(open('src/config_schema.yaml'))"
