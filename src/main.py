@@ -168,6 +168,9 @@ def _run_app(preloaded_model=None):
             if self.result_thread and self.result_thread.isRunning():
                 return
 
+            # Clean up previous thread to prevent QThread/signal accumulation
+            self._cleanup_result_thread()
+
             self.result_thread = ResultThread(self.local_model)
             if not ConfigManager.get_config_value('misc', 'hide_status_window'):
                 self.result_thread.statusSignal.connect(self.status_window.updateStatus)
@@ -181,6 +184,36 @@ def _run_app(preloaded_model=None):
             """
             if self.result_thread and self.result_thread.isRunning():
                 self.result_thread.stop()
+
+        def _cleanup_result_thread(self):
+            """
+            Disconnect signals and schedule deletion of the previous ResultThread
+            to prevent QThread accumulation and signal stacking over long sessions.
+            """
+            if self.result_thread is None:
+                return
+
+            # Disconnect all signals from the old thread
+            try:
+                self.result_thread.statusSignal.disconnect()
+            except TypeError:
+                pass
+            try:
+                self.result_thread.resultSignal.disconnect()
+            except TypeError:
+                pass
+
+            # Disconnect status_window.closeSignal from stop_result_thread
+            # (it gets reconnected each cycle otherwise)
+            if not ConfigManager.get_config_value('misc', 'hide_status_window'):
+                try:
+                    self.status_window.closeSignal.disconnect(self.stop_result_thread)
+                except TypeError:
+                    pass
+
+            # Schedule the old thread for deletion by Qt's event loop
+            self.result_thread.deleteLater()
+            self.result_thread = None
 
         def on_transcription_complete(self, result):
             """

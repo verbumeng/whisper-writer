@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - New main window to either start the keyboard listener or open the settings window.
 - New continuous recording mode ([Issue #40](https://github.com/savbell/whisper-writer/issues/40)).
 - New option to play a sound when transcription finishes ([Issue #40](https://github.com/savbell/whisper-writer/issues/40)).
+- `CLAUDE.md` project guide for AI-assisted development.
+
+### Fixed
+- **Long-session slowdown:** ResultThread objects and Qt signal connections were accumulating across transcription cycles without cleanup. After 12-24+ hours, hundreds of orphaned QThread objects and stacked signal connections caused progressive typing slowdown. Fixed by disconnecting signals and calling `deleteLater()` on previous ResultThread before creating a new one.
 
 ### Changed
 - Migrated status window from using `tkinter` to `PyQt5`.

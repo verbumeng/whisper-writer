@@ -133,3 +133,9 @@ config.yaml
 
 # Local launcher (has hardcoded paths)
 whisper-writer.bat
+
+# Setup guide (portable delta doc — not part of the repo distribution)
+SETUP.md
+
+# Claude Code project guide (local dev context, not for public distribution)
+CLAUDE.md
