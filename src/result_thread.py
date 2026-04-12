@@ -1,13 +1,12 @@
 import time
 import traceback
-import numpy as np
-import sounddevice as sd
-import tempfile
-import wave
-import webrtcvad
-from PyQt5.QtCore import QThread, QMutex, pyqtSignal
 from collections import deque
 from threading import Event
+
+import numpy as np
+import sounddevice as sd
+import webrtcvad
+from PyQt5.QtCore import QMutex, QThread, pyqtSignal
 
 from transcription import transcribe
 from utils import ConfigManager
@@ -56,7 +55,7 @@ class ResultThread(QThread):
         self.mutex.lock()
         self.is_running = False
         self.mutex.unlock()
-        self.statusSignal.emit('idle')
+        self.statusSignal.emit("idle")
         self.wait()
 
     def run(self):
@@ -69,19 +68,19 @@ class ResultThread(QThread):
             self.is_recording = True
             self.mutex.unlock()
 
-            self.statusSignal.emit('recording')
-            ConfigManager.console_print('Recording...')
+            self.statusSignal.emit("recording")
+            ConfigManager.console_print("Recording...")
             audio_data = self._record_audio()
 
             if not self.is_running:
                 return
 
             if audio_data is None:
-                self.statusSignal.emit('idle')
+                self.statusSignal.emit("idle")
                 return
 
-            self.statusSignal.emit('transcribing')
-            ConfigManager.console_print('Transcribing...')
+            self.statusSignal.emit("transcribing")
+            ConfigManager.console_print("Transcribing...")
 
             # Time the transcription process
             start_time = time.time()
@@ -89,18 +88,20 @@ class ResultThread(QThread):
             end_time = time.time()
 
             transcription_time = end_time - start_time
-            ConfigManager.console_print(f'Transcription completed in {transcription_time:.2f} seconds. Post-processed line: {result}')
+            ConfigManager.console_print(
+                f"Transcription completed in {transcription_time:.2f} seconds. Post-processed line: {result}"
+            )
 
             if not self.is_running:
                 return
 
-            self.statusSignal.emit('idle')
+            self.statusSignal.emit("idle")
             self.resultSignal.emit(result)
 
-        except Exception as e:
+        except Exception:
             traceback.print_exc()
-            self.statusSignal.emit('error')
-            self.resultSignal.emit('')
+            self.statusSignal.emit("error")
+            self.resultSignal.emit("")
         finally:
             self.stop_recording()
 
@@ -110,20 +111,20 @@ class ResultThread(QThread):
 
         :return: numpy array of audio data, or None if the recording is too short
         """
-        recording_options = ConfigManager.get_config_section('recording_options')
-        self.sample_rate = recording_options.get('sample_rate') or 16000
+        recording_options = ConfigManager.get_config_section("recording_options")
+        self.sample_rate = recording_options.get("sample_rate") or 16000
         frame_duration_ms = 30  # 30ms frame duration for WebRTC VAD
         frame_size = int(self.sample_rate * (frame_duration_ms / 1000.0))
-        silence_duration_ms = recording_options.get('silence_duration') or 900
+        silence_duration_ms = recording_options.get("silence_duration") or 900
         silence_frames = int(silence_duration_ms / frame_duration_ms)
 
         # 150ms delay before starting VAD to avoid mistaking the sound of key pressing for voice
         initial_frames_to_skip = int(0.15 * self.sample_rate / frame_size)
 
         # Create VAD only for recording modes that use it
-        recording_mode = recording_options.get('recording_mode') or 'continuous'
+        recording_mode = recording_options.get("recording_mode") or "continuous"
         vad = None
-        if recording_mode in ('voice_activity_detection', 'continuous'):
+        if recording_mode in ("voice_activity_detection", "continuous"):
             vad = webrtcvad.Vad(2)  # VAD aggressiveness: 0 to 3, 3 being the most aggressive
             speech_detected = False
             silent_frame_count = 0
@@ -139,9 +140,14 @@ class ResultThread(QThread):
             audio_buffer.extend(indata[:, 0])
             data_ready.set()
 
-        with sd.InputStream(samplerate=self.sample_rate, channels=1, dtype='int16',
-                            blocksize=frame_size, device=recording_options.get('sound_device'),
-                            callback=audio_callback):
+        with sd.InputStream(
+            samplerate=self.sample_rate,
+            channels=1,
+            dtype="int16",
+            blocksize=frame_size,
+            device=recording_options.get("sound_device"),
+            callback=audio_callback,
+        ):
             while self.is_running and self.is_recording:
                 data_ready.wait()
                 data_ready.clear()
@@ -174,12 +180,14 @@ class ResultThread(QThread):
         audio_data = np.array(recording, dtype=np.int16)
         duration = len(audio_data) / self.sample_rate
 
-        ConfigManager.console_print(f'Recording finished. Size: {audio_data.size} samples, Duration: {duration:.2f} seconds')
+        ConfigManager.console_print(
+            f"Recording finished. Size: {audio_data.size} samples, Duration: {duration:.2f} seconds"
+        )
 
-        min_duration_ms = recording_options.get('min_duration') or 100
+        min_duration_ms = recording_options.get("min_duration") or 100
 
         if (duration * 1000) < min_duration_ms:
-            ConfigManager.console_print(f'Discarded due to being too short.')
+            ConfigManager.console_print("Discarded due to being too short.")
             return None
 
         return audio_data

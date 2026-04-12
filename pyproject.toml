@@ -33,3 +33,8 @@ line-length = 120
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]
 ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# Key enum members intentionally use single-letter names (I, O) that match
+# keyboard letters; evdev/typing imports are guarded by try/except ImportError.
+"src/key_listener.py" = ["E741", "F401", "F821"]

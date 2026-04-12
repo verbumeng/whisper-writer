@@ -29,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Migrated from JSON to YAML for configuration storage.
 - Upgraded to latest versions of `openai` and `faster-whisper`, including support for local API ([upstream #32](https://github.com/savbell/whisper-writer/issues/32)).
 - **(fork)** Version bump to 2.0.0 to reflect significant divergence from upstream.
+- **(fork)** Applied Ruff lint and format cleanup across `src/`; configured per-file-ignores for conditional imports in `key_listener.py`.
 
 ### Removed
 - No longer using `keyboard` package to listen for key presses.
