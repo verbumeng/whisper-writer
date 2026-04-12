@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **(fork)** GitHub Actions CI workflow for linting and validation.
 - **(fork)** `pyproject.toml` for project metadata.
 - **(fork)** Contributing guidelines.
+- **(fork)** Lightweight pytest suite under `tests/` covering config-schema integrity and source-file syntax, wired into CI.
+- **(fork)** `SECURITY.md` describing vulnerability reporting process.
 
 ### Fixed
 - **(fork)** Long-session slowdown: `ResultThread` objects and Qt signal connections were accumulating across transcription cycles without cleanup. After 12-24+ hours, hundreds of orphaned QThread objects and stacked signal connections caused progressive typing slowdown. Fixed by disconnecting signals and calling `deleteLater()` on previous `ResultThread` before creating a new one.
@@ -30,6 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Upgraded to latest versions of `openai` and `faster-whisper`, including support for local API ([upstream #32](https://github.com/savbell/whisper-writer/issues/32)).
 - **(fork)** Version bump to 2.0.0 to reflect significant divergence from upstream.
 - **(fork)** Applied Ruff lint and format cleanup across `src/`; configured per-file-ignores for conditional imports in `key_listener.py`.
+- **(fork)** `Validate imports` CI job no longer installs the full runtime dependency tree (it only needs stdlib `py_compile`), speeding up CI and avoiding upstream dependency build failures.
 
 ### Removed
 - No longer using `keyboard` package to listen for key presses.

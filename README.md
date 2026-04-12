@@ -164,9 +164,17 @@ If any of the configuration options are invalid or not provided, the program wil
 
 You can see all reported issues and their current status in the [Issue Tracker](https://github.com/verbumeng/whisper-writer/issues). If you encounter a problem, please [open a new issue](https://github.com/verbumeng/whisper-writer/issues/new) with a detailed description and reproduction steps, if possible.
 
+## Testing
+
+There is a lightweight CI suite (`tests/`) covering source-file syntax and config-schema integrity. There is **no functional/integration test coverage yet** — features are verified manually by running `python run.py`. Contributions that add coverage are very welcome.
+
 ## Contributing
 
 Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for how to report vulnerabilities.
 
 ## Credits
 
