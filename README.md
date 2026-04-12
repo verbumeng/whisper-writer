@@ -27,9 +27,9 @@ Transcription can be done locally through [faster-whisper](https://github.com/SY
 
 This fork includes the following improvements over the [original project](https://github.com/savbell/whisper-writer):
 
-- **Long-session stability fix**: Fixed a memory leak where `ResultThread` objects and Qt signal connections accumulated over time, causing progressive typing slowdown after 12-24+ hours of use.
-- **CUDA/PyQt5 segfault fix**: Model is now loaded before PyQt5 import to avoid GPU context conflicts on Windows.
-- **Hotkey false-trigger fix**: Unknown keys no longer default to SPACE, preventing phantom activations.
+- **Long-session stability**: Fixed memory leaks where `ResultThread` objects, Qt signal connections, and pynput listener threads accumulated over time, causing progressive slowdown after extended use.
+- **CUDA/PyQt5 compatibility**: Model is now loaded before PyQt5 import to avoid GPU context conflicts on Windows.
+- **Reliable hotkey detection**: Unknown keys no longer default to SPACE, preventing phantom activations.
 - **Improved Windows CUDA support**: `run.py` automatically discovers and adds CUDA DLL paths to PATH.
 - **YAML configuration**: Migrated from JSON to YAML for more readable config files.
 
