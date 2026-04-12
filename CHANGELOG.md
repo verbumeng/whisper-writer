@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 - **(fork)** Long-session slowdown: `ResultThread` objects and Qt signal connections were accumulating across transcription cycles without cleanup. After 12-24+ hours, hundreds of orphaned QThread objects and stacked signal connections caused progressive typing slowdown. Fixed by disconnecting signals and calling `deleteLater()` on previous `ResultThread` before creating a new one.
+- **(fork)** Pynput/evdev listener thread leak: `PynputBackend.start()` and `EvdevBackend.start()` created new listener threads on each call without stopping existing ones. In non-continuous recording modes, every transcription cycle leaked two pynput threads (keyboard + mouse). Fixed by calling `stop()` at the start of each backend's `start()` method.
 - **(fork)** CUDA/PyQt5 segfault on Windows: Model is now loaded before any PyQt5 import to avoid GPU context conflicts.
 - **(fork)** Hotkey false triggers: Unknown keys no longer default to SPACE, preventing phantom activations.
 

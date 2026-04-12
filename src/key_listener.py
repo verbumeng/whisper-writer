@@ -436,6 +436,9 @@ class EvdevBackend(InputBackend):
 
     def start(self):
         """Start the evdev backend."""
+        # Stop any existing threads to prevent leaks
+        self.stop()
+
         import evdev
         import threading
         self.evdev = evdev
@@ -763,6 +766,9 @@ class PynputBackend(InputBackend):
 
     def start(self):
         """Start listening for keyboard and mouse events."""
+        # Stop any existing listeners to prevent thread leaks
+        self.stop()
+
         if self.keyboard is None or self.mouse is None:
             from pynput import keyboard, mouse
             self.keyboard = keyboard
