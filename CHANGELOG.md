@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 > This is a fork of [savbell/whisper-writer](https://github.com/savbell/whisper-writer). Changes below marked with **(fork)** are specific to this fork.
 
-## [2.0.0] - Unreleased
+## [2.0.0] - 2026-04-13
 
 ### Added
 - New settings window to configure WhisperWriter.
