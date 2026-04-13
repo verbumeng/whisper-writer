@@ -11,6 +11,7 @@ class InputEvent(Enum):
     MOUSE_PRESS = auto()
     MOUSE_RELEASE = auto()
 
+
 class KeyCode(Enum):
     # Modifier keys
     CTRL_LEFT = auto()
@@ -199,6 +200,7 @@ class KeyCode(Enum):
     MOUSE_SIDE2 = auto()
     MOUSE_SIDE3 = auto()
 
+
 class InputBackend(ABC):
     """
     Abstract base class for input backends.
@@ -242,6 +244,7 @@ class InputBackend(ABC):
         """
         pass
 
+
 class KeyChord:
     """
     Represents a combination of keys that need to be pressed simultaneously.
@@ -271,6 +274,7 @@ class KeyChord:
                 return False
         return True
 
+
 class KeyListener:
     """
     Manages input backends and listens for specific key combinations.
@@ -281,10 +285,7 @@ class KeyListener:
         self.backends = []
         self.active_backend = None
         self.key_chord = None
-        self.callbacks = {
-            "on_activate": [],
-            "on_deactivate": []
-        }
+        self.callbacks = {"on_activate": [], "on_deactivate": []}
         self.load_activation_keys()
         self.initialize_backends()
         self.select_backend_from_config()
@@ -296,15 +297,12 @@ class KeyListener:
 
     def select_backend_from_config(self):
         """Select the active backend based on configuration."""
-        preferred_backend = ConfigManager.get_config_value('recording_options', 'input_backend')
+        preferred_backend = ConfigManager.get_config_value("recording_options", "input_backend")
 
-        if preferred_backend == 'auto':
+        if preferred_backend == "auto":
             self.select_active_backend()
         else:
-            backend_map = {
-                'evdev': EvdevBackend,
-                'pynput': PynputBackend
-            }
+            backend_map = {"evdev": EvdevBackend, "pynput": PynputBackend}
 
             if preferred_backend in backend_map:
                 try:
@@ -353,7 +351,7 @@ class KeyListener:
 
     def load_activation_keys(self):
         """Load activation keys from configuration."""
-        key_combination = ConfigManager.get_config_value('recording_options', 'activation_key')
+        key_combination = ConfigManager.get_config_value("recording_options", "activation_key")
         keys = self.parse_key_combination(key_combination)
         self.set_activation_keys(keys)
 
@@ -361,13 +359,13 @@ class KeyListener:
         """Parse a string representation of key combination into a set of KeyCodes."""
         keys = set()
         key_map = {
-            'CTRL': frozenset({KeyCode.CTRL_LEFT, KeyCode.CTRL_RIGHT}),
-            'SHIFT': frozenset({KeyCode.SHIFT_LEFT, KeyCode.SHIFT_RIGHT}),
-            'ALT': frozenset({KeyCode.ALT_LEFT, KeyCode.ALT_RIGHT}),
-            'META': frozenset({KeyCode.META_LEFT, KeyCode.META_RIGHT}),
+            "CTRL": frozenset({KeyCode.CTRL_LEFT, KeyCode.CTRL_RIGHT}),
+            "SHIFT": frozenset({KeyCode.SHIFT_LEFT, KeyCode.SHIFT_RIGHT}),
+            "ALT": frozenset({KeyCode.ALT_LEFT, KeyCode.ALT_RIGHT}),
+            "META": frozenset({KeyCode.META_LEFT, KeyCode.META_RIGHT}),
         }
 
-        for key in combination_string.upper().split('+'):
+        for key in combination_string.upper().split("+"):
             key = key.strip()
             if key in key_map:
                 keys.add(key_map[key])
@@ -412,6 +410,7 @@ class KeyListener:
         """Update activation keys from the current configuration."""
         self.load_activation_keys()
 
+
 class EvdevBackend(InputBackend):
     """
     Backend for handling input events using the evdev library.
@@ -422,6 +421,7 @@ class EvdevBackend(InputBackend):
         """Check if the evdev library is available."""
         try:
             import evdev
+
             return True
         except ImportError:
             return False
@@ -439,8 +439,10 @@ class EvdevBackend(InputBackend):
         # Stop any existing threads to prevent leaks
         self.stop()
 
-        import evdev
         import threading
+
+        import evdev
+
         self.evdev = evdev
         self.key_map = self._create_key_map()
 
@@ -482,12 +484,14 @@ class EvdevBackend(InputBackend):
     def _start_listening(self):
         """Start the listening thread."""
         import threading
+
         self.thread = threading.Thread(target=self._listen_loop)
         self.thread.start()
 
     def _listen_loop(self):
         """Main loop for listening to input events."""
         import select
+
         while not self.stop_event.is_set():
             try:
                 # Wait for input events with a timeout of 0.1 seconds
@@ -511,6 +515,7 @@ class EvdevBackend(InputBackend):
     def _handle_device_error(self, device, error):
         """Handle errors that occur when reading from a device."""
         import errno
+
         if isinstance(error, BlockingIOError) and error.errno == errno.EAGAIN:
             return  # Non-blocking IO is expected, just continue
         if isinstance(error, OSError) and (error.errno == errno.EBADF or error.errno == errno.ENODEV):
@@ -556,7 +561,6 @@ class EvdevBackend(InputBackend):
             self.evdev.ecodes.KEY_RIGHTALT: KeyCode.ALT_RIGHT,
             self.evdev.ecodes.KEY_LEFTMETA: KeyCode.META_LEFT,
             self.evdev.ecodes.KEY_RIGHTMETA: KeyCode.META_RIGHT,
-
             # Function keys
             self.evdev.ecodes.KEY_F1: KeyCode.F1,
             self.evdev.ecodes.KEY_F2: KeyCode.F2,
@@ -570,7 +574,6 @@ class EvdevBackend(InputBackend):
             self.evdev.ecodes.KEY_F10: KeyCode.F10,
             self.evdev.ecodes.KEY_F11: KeyCode.F11,
             self.evdev.ecodes.KEY_F12: KeyCode.F12,
-
             # Number keys
             self.evdev.ecodes.KEY_1: KeyCode.ONE,
             self.evdev.ecodes.KEY_2: KeyCode.TWO,
@@ -582,7 +585,6 @@ class EvdevBackend(InputBackend):
             self.evdev.ecodes.KEY_8: KeyCode.EIGHT,
             self.evdev.ecodes.KEY_9: KeyCode.NINE,
             self.evdev.ecodes.KEY_0: KeyCode.ZERO,
-
             # Letter keys
             self.evdev.ecodes.KEY_A: KeyCode.A,
             self.evdev.ecodes.KEY_B: KeyCode.B,
@@ -610,7 +612,6 @@ class EvdevBackend(InputBackend):
             self.evdev.ecodes.KEY_X: KeyCode.X,
             self.evdev.ecodes.KEY_Y: KeyCode.Y,
             self.evdev.ecodes.KEY_Z: KeyCode.Z,
-
             # Special keys
             self.evdev.ecodes.KEY_SPACE: KeyCode.SPACE,
             self.evdev.ecodes.KEY_ENTER: KeyCode.ENTER,
@@ -628,13 +629,11 @@ class EvdevBackend(InputBackend):
             self.evdev.ecodes.KEY_SCROLLLOCK: KeyCode.SCROLL_LOCK,
             self.evdev.ecodes.KEY_PAUSE: KeyCode.PAUSE,
             self.evdev.ecodes.KEY_SYSRQ: KeyCode.PRINT_SCREEN,
-
             # Arrow keys
             self.evdev.ecodes.KEY_UP: KeyCode.UP,
             self.evdev.ecodes.KEY_DOWN: KeyCode.DOWN,
             self.evdev.ecodes.KEY_LEFT: KeyCode.LEFT,
             self.evdev.ecodes.KEY_RIGHT: KeyCode.RIGHT,
-
             # Numpad keys
             self.evdev.ecodes.KEY_KP0: KeyCode.NUMPAD_0,
             self.evdev.ecodes.KEY_KP1: KeyCode.NUMPAD_1,
@@ -652,7 +651,6 @@ class EvdevBackend(InputBackend):
             self.evdev.ecodes.KEY_KPSLASH: KeyCode.NUMPAD_DIVIDE,
             self.evdev.ecodes.KEY_KPDOT: KeyCode.NUMPAD_DECIMAL,
             self.evdev.ecodes.KEY_KPENTER: KeyCode.NUMPAD_ENTER,
-
             # Additional special characters
             self.evdev.ecodes.KEY_MINUS: KeyCode.MINUS,
             self.evdev.ecodes.KEY_EQUAL: KeyCode.EQUALS,
@@ -665,7 +663,6 @@ class EvdevBackend(InputBackend):
             self.evdev.ecodes.KEY_COMMA: KeyCode.COMMA,
             self.evdev.ecodes.KEY_DOT: KeyCode.PERIOD,
             self.evdev.ecodes.KEY_SLASH: KeyCode.SLASH,
-
             # Media keys
             self.evdev.ecodes.KEY_MUTE: KeyCode.MUTE,
             self.evdev.ecodes.KEY_VOLUMEDOWN: KeyCode.VOLUME_DOWN,
@@ -673,7 +670,6 @@ class EvdevBackend(InputBackend):
             self.evdev.ecodes.KEY_PLAYPAUSE: KeyCode.PLAY_PAUSE,
             self.evdev.ecodes.KEY_NEXTSONG: KeyCode.NEXT_TRACK,
             self.evdev.ecodes.KEY_PREVIOUSSONG: KeyCode.PREV_TRACK,
-
             # Additional function keys (if needed)
             self.evdev.ecodes.KEY_F13: KeyCode.F13,
             self.evdev.ecodes.KEY_F14: KeyCode.F14,
@@ -687,7 +683,6 @@ class EvdevBackend(InputBackend):
             self.evdev.ecodes.KEY_F22: KeyCode.F22,
             self.evdev.ecodes.KEY_F23: KeyCode.F23,
             self.evdev.ecodes.KEY_F24: KeyCode.F24,
-
             # Additional Media and Special Function Keys
             self.evdev.ecodes.KEY_PLAYPAUSE: KeyCode.MEDIA_PLAY_PAUSE,
             self.evdev.ecodes.KEY_STOP: KeyCode.MEDIA_STOP,
@@ -723,7 +718,6 @@ class EvdevBackend(InputBackend):
             self.evdev.ecodes.KEY_MENU: KeyCode.MENU,
             self.evdev.ecodes.KEY_CLEAR: KeyCode.CLEAR,
             self.evdev.ecodes.KEY_SCREENLOCK: KeyCode.LOCK,
-
             # Mouse Buttons
             self.evdev.ecodes.BTN_LEFT: KeyCode.MOUSE_LEFT,
             self.evdev.ecodes.BTN_RIGHT: KeyCode.MOUSE_RIGHT,
@@ -742,6 +736,7 @@ class EvdevBackend(InputBackend):
         """
         pass
 
+
 class PynputBackend(InputBackend):
     """
     Input backend implementation using the pynput library.
@@ -752,6 +747,7 @@ class PynputBackend(InputBackend):
         """Check if pynput library is available."""
         try:
             import pynput
+
             return True
         except ImportError:
             return False
@@ -771,17 +767,15 @@ class PynputBackend(InputBackend):
 
         if self.keyboard is None or self.mouse is None:
             from pynput import keyboard, mouse
+
             self.keyboard = keyboard
             self.mouse = mouse
             self.key_map = self._create_key_map()
 
         self.keyboard_listener = self.keyboard.Listener(
-            on_press=self._on_keyboard_press,
-            on_release=self._on_keyboard_release
+            on_press=self._on_keyboard_press, on_release=self._on_keyboard_release
         )
-        self.mouse_listener = self.mouse.Listener(
-            on_click=self._on_mouse_click
-        )
+        self.mouse_listener = self.mouse.Listener(on_click=self._on_mouse_click)
         self.keyboard_listener.start()
         self.mouse_listener.start()
 
@@ -833,7 +827,6 @@ class PynputBackend(InputBackend):
             self.keyboard.Key.alt_r: KeyCode.ALT_RIGHT,
             self.keyboard.Key.cmd_l: KeyCode.META_LEFT,
             self.keyboard.Key.cmd_r: KeyCode.META_RIGHT,
-
             # Function keys
             self.keyboard.Key.f1: KeyCode.F1,
             self.keyboard.Key.f2: KeyCode.F2,
@@ -855,47 +848,44 @@ class PynputBackend(InputBackend):
             self.keyboard.Key.f18: KeyCode.F18,
             self.keyboard.Key.f19: KeyCode.F19,
             self.keyboard.Key.f20: KeyCode.F20,
-
             # Number keys
-            self.keyboard.KeyCode.from_char('1'): KeyCode.ONE,
-            self.keyboard.KeyCode.from_char('2'): KeyCode.TWO,
-            self.keyboard.KeyCode.from_char('3'): KeyCode.THREE,
-            self.keyboard.KeyCode.from_char('4'): KeyCode.FOUR,
-            self.keyboard.KeyCode.from_char('5'): KeyCode.FIVE,
-            self.keyboard.KeyCode.from_char('6'): KeyCode.SIX,
-            self.keyboard.KeyCode.from_char('7'): KeyCode.SEVEN,
-            self.keyboard.KeyCode.from_char('8'): KeyCode.EIGHT,
-            self.keyboard.KeyCode.from_char('9'): KeyCode.NINE,
-            self.keyboard.KeyCode.from_char('0'): KeyCode.ZERO,
-
+            self.keyboard.KeyCode.from_char("1"): KeyCode.ONE,
+            self.keyboard.KeyCode.from_char("2"): KeyCode.TWO,
+            self.keyboard.KeyCode.from_char("3"): KeyCode.THREE,
+            self.keyboard.KeyCode.from_char("4"): KeyCode.FOUR,
+            self.keyboard.KeyCode.from_char("5"): KeyCode.FIVE,
+            self.keyboard.KeyCode.from_char("6"): KeyCode.SIX,
+            self.keyboard.KeyCode.from_char("7"): KeyCode.SEVEN,
+            self.keyboard.KeyCode.from_char("8"): KeyCode.EIGHT,
+            self.keyboard.KeyCode.from_char("9"): KeyCode.NINE,
+            self.keyboard.KeyCode.from_char("0"): KeyCode.ZERO,
             # Letter keys
-            self.keyboard.KeyCode.from_char('a'): KeyCode.A,
-            self.keyboard.KeyCode.from_char('b'): KeyCode.B,
-            self.keyboard.KeyCode.from_char('c'): KeyCode.C,
-            self.keyboard.KeyCode.from_char('d'): KeyCode.D,
-            self.keyboard.KeyCode.from_char('e'): KeyCode.E,
-            self.keyboard.KeyCode.from_char('f'): KeyCode.F,
-            self.keyboard.KeyCode.from_char('g'): KeyCode.G,
-            self.keyboard.KeyCode.from_char('h'): KeyCode.H,
-            self.keyboard.KeyCode.from_char('i'): KeyCode.I,
-            self.keyboard.KeyCode.from_char('j'): KeyCode.J,
-            self.keyboard.KeyCode.from_char('k'): KeyCode.K,
-            self.keyboard.KeyCode.from_char('l'): KeyCode.L,
-            self.keyboard.KeyCode.from_char('m'): KeyCode.M,
-            self.keyboard.KeyCode.from_char('n'): KeyCode.N,
-            self.keyboard.KeyCode.from_char('o'): KeyCode.O,
-            self.keyboard.KeyCode.from_char('p'): KeyCode.P,
-            self.keyboard.KeyCode.from_char('q'): KeyCode.Q,
-            self.keyboard.KeyCode.from_char('r'): KeyCode.R,
-            self.keyboard.KeyCode.from_char('s'): KeyCode.S,
-            self.keyboard.KeyCode.from_char('t'): KeyCode.T,
-            self.keyboard.KeyCode.from_char('u'): KeyCode.U,
-            self.keyboard.KeyCode.from_char('v'): KeyCode.V,
-            self.keyboard.KeyCode.from_char('w'): KeyCode.W,
-            self.keyboard.KeyCode.from_char('x'): KeyCode.X,
-            self.keyboard.KeyCode.from_char('y'): KeyCode.Y,
-            self.keyboard.KeyCode.from_char('z'): KeyCode.Z,
-
+            self.keyboard.KeyCode.from_char("a"): KeyCode.A,
+            self.keyboard.KeyCode.from_char("b"): KeyCode.B,
+            self.keyboard.KeyCode.from_char("c"): KeyCode.C,
+            self.keyboard.KeyCode.from_char("d"): KeyCode.D,
+            self.keyboard.KeyCode.from_char("e"): KeyCode.E,
+            self.keyboard.KeyCode.from_char("f"): KeyCode.F,
+            self.keyboard.KeyCode.from_char("g"): KeyCode.G,
+            self.keyboard.KeyCode.from_char("h"): KeyCode.H,
+            self.keyboard.KeyCode.from_char("i"): KeyCode.I,
+            self.keyboard.KeyCode.from_char("j"): KeyCode.J,
+            self.keyboard.KeyCode.from_char("k"): KeyCode.K,
+            self.keyboard.KeyCode.from_char("l"): KeyCode.L,
+            self.keyboard.KeyCode.from_char("m"): KeyCode.M,
+            self.keyboard.KeyCode.from_char("n"): KeyCode.N,
+            self.keyboard.KeyCode.from_char("o"): KeyCode.O,
+            self.keyboard.KeyCode.from_char("p"): KeyCode.P,
+            self.keyboard.KeyCode.from_char("q"): KeyCode.Q,
+            self.keyboard.KeyCode.from_char("r"): KeyCode.R,
+            self.keyboard.KeyCode.from_char("s"): KeyCode.S,
+            self.keyboard.KeyCode.from_char("t"): KeyCode.T,
+            self.keyboard.KeyCode.from_char("u"): KeyCode.U,
+            self.keyboard.KeyCode.from_char("v"): KeyCode.V,
+            self.keyboard.KeyCode.from_char("w"): KeyCode.W,
+            self.keyboard.KeyCode.from_char("x"): KeyCode.X,
+            self.keyboard.KeyCode.from_char("y"): KeyCode.Y,
+            self.keyboard.KeyCode.from_char("z"): KeyCode.Z,
             # Special keys
             self.keyboard.Key.space: KeyCode.SPACE,
             self.keyboard.Key.enter: KeyCode.ENTER,
@@ -913,13 +903,11 @@ class PynputBackend(InputBackend):
             self.keyboard.Key.scroll_lock: KeyCode.SCROLL_LOCK,
             self.keyboard.Key.pause: KeyCode.PAUSE,
             self.keyboard.Key.print_screen: KeyCode.PRINT_SCREEN,
-
             # Arrow keys
             self.keyboard.Key.up: KeyCode.UP,
             self.keyboard.Key.down: KeyCode.DOWN,
             self.keyboard.Key.left: KeyCode.LEFT,
             self.keyboard.Key.right: KeyCode.RIGHT,
-
             # Numpad keys
             self.keyboard.Key.num_lock: KeyCode.NUM_LOCK,
             self.keyboard.KeyCode.from_vk(96): KeyCode.NUMPAD_0,
@@ -937,20 +925,18 @@ class PynputBackend(InputBackend):
             self.keyboard.KeyCode.from_vk(106): KeyCode.NUMPAD_MULTIPLY,
             self.keyboard.KeyCode.from_vk(111): KeyCode.NUMPAD_DIVIDE,
             self.keyboard.KeyCode.from_vk(110): KeyCode.NUMPAD_DECIMAL,
-
             # Additional special characters
-            self.keyboard.KeyCode.from_char('-'): KeyCode.MINUS,
-            self.keyboard.KeyCode.from_char('='): KeyCode.EQUALS,
-            self.keyboard.KeyCode.from_char('['): KeyCode.LEFT_BRACKET,
-            self.keyboard.KeyCode.from_char(']'): KeyCode.RIGHT_BRACKET,
-            self.keyboard.KeyCode.from_char(';'): KeyCode.SEMICOLON,
+            self.keyboard.KeyCode.from_char("-"): KeyCode.MINUS,
+            self.keyboard.KeyCode.from_char("="): KeyCode.EQUALS,
+            self.keyboard.KeyCode.from_char("["): KeyCode.LEFT_BRACKET,
+            self.keyboard.KeyCode.from_char("]"): KeyCode.RIGHT_BRACKET,
+            self.keyboard.KeyCode.from_char(";"): KeyCode.SEMICOLON,
             self.keyboard.KeyCode.from_char("'"): KeyCode.QUOTE,
-            self.keyboard.KeyCode.from_char('`'): KeyCode.BACKQUOTE,
-            self.keyboard.KeyCode.from_char('\\'): KeyCode.BACKSLASH,
-            self.keyboard.KeyCode.from_char(','): KeyCode.COMMA,
-            self.keyboard.KeyCode.from_char('.'): KeyCode.PERIOD,
-            self.keyboard.KeyCode.from_char('/'): KeyCode.SLASH,
-
+            self.keyboard.KeyCode.from_char("`"): KeyCode.BACKQUOTE,
+            self.keyboard.KeyCode.from_char("\\"): KeyCode.BACKSLASH,
+            self.keyboard.KeyCode.from_char(","): KeyCode.COMMA,
+            self.keyboard.KeyCode.from_char("."): KeyCode.PERIOD,
+            self.keyboard.KeyCode.from_char("/"): KeyCode.SLASH,
             # Media keys
             self.keyboard.Key.media_volume_mute: KeyCode.AUDIO_MUTE,
             self.keyboard.Key.media_volume_down: KeyCode.AUDIO_VOLUME_DOWN,
@@ -958,7 +944,6 @@ class PynputBackend(InputBackend):
             self.keyboard.Key.media_play_pause: KeyCode.MEDIA_PLAY_PAUSE,
             self.keyboard.Key.media_next: KeyCode.MEDIA_NEXT,
             self.keyboard.Key.media_previous: KeyCode.MEDIA_PREVIOUS,
-
             # Mouse buttons
             self.mouse.Button.left: KeyCode.MOUSE_LEFT,
             self.mouse.Button.right: KeyCode.MOUSE_RIGHT,
